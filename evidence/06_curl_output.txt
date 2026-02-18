@@ -9,3 +9,9 @@ $ curl http://microservices-alb-688933601318.us-east-1.elb.amazonaws.com/service
 HTTP/1.1 200 OK
 Content-Type: application/json
 {"status":"healthy"}
+
+$ ./verify_endpoints.sh microservices-alb-688933601318.us-east-1.elb.amazonaws.com
+
+Checking http://microservices-alb-688933601318.us-east-1.elb.amazonaws.com/service1/health
+Checking http://microservices-alb-688933601318.us-east-1.elb.amazonaws.com/service2/health
+All checks passed!
