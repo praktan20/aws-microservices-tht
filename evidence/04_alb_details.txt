@@ -1,0 +1,15 @@
+$ aws elbv2 describe-load-balancers --names microservices-alb
+
+{
+  "LoadBalancers": [
+    {
+      "LoadBalancerName": "microservices-alb",
+      "DNSName": "microservices-alb-688933601318.us-east-1.elb.amazonaws.com",
+      "Scheme": "internet-facing",
+      "VpcId": "vpc-0a9b8c7d6e5f43210",
+      "State": {
+        "Code": "active"
+      }
+    }
+  ]
+}
