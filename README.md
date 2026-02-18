@@ -1,245 +1,294 @@
-🚀 AWS Microservices Lift-and-Shift Deployment (Docker + EC2 + ALB + ASG + Terraform)
-📌 Project Overview
+# 🚀 AWS Microservices Lift-and-Shift Deployment  
+### Docker • EC2 • ALB • Auto Scaling • Terraform
 
-This project demonstrates a minimal end-to-end cloud migration of containerized services from local Docker development to a scalable AWS infrastructure using Terraform.
+![AWS](https://img.shields.io/badge/AWS-Cloud-orange)
+![Terraform](https://img.shields.io/badge/IaC-Terraform-purple)
+![Docker](https://img.shields.io/badge/Container-Docker-blue)
+![Status](https://img.shields.io/badge/Status-Completed-success)
 
-The objective was to:
+---
 
-Push Docker images to Amazon ECR
+## 📌 Overview
 
-Deploy services on EC2 instances
+This project demonstrates a minimal end-to-end migration of containerized services from local Docker development to a scalable AWS infrastructure using Terraform.
 
-Orchestrate containers using docker-compose
+The goal was to:
 
-Expose services through an Application Load Balancer (ALB)
+- Push Docker images to **Amazon ECR**
+- Deploy services on **EC2 instances**
+- Orchestrate containers using **docker-compose**
+- Expose services via an **Application Load Balancer (ALB)**
+- Implement **Auto Scaling**
+- Automate validation with a health verification script
+- Provision infrastructure using **Terraform**
 
-Implement Auto Scaling
+This simulates a real-world DevOps lift-and-shift migration scenario.
 
-Automate validation with a health verification script
+---
 
-Provision all infrastructure using Terraform
+## 🏗️ Architecture
 
-This simulates a time-boxed DevOps proof-of-concept migration from a legacy monolith to a containerized microservices architecture.
+### 🔄 Architecture Flow
 
-🏗️ Architecture Diagram
-4
-🔄 Architecture Flow
+1. Docker images pushed to **Amazon ECR**
+2. EC2 instances pull images via **Launch Template user-data**
+3. Containers start automatically using `docker-compose`
+4. ALB routes traffic:
+   - `/service1/*` → Target Group 1 → Port 8080
+   - `/service2/*` → Target Group 2 → Port 8081
+5. Auto Scaling Group maintains capacity (CPU > 40%)
 
-Docker images are pushed to Amazon ECR
+---
 
-EC2 instances pull images during boot via Launch Template user-data
+## 🌎 AWS Environment
 
-Containers run using docker-compose
+| Component | Configuration |
+|------------|--------------|
+| AWS Region | us-east-1 |
+| VPC CIDR | 10.0.0.0/16 |
+| Subnets | 2 Public Subnets |
+| EC2 Type | t2.micro |
+| Load Balancer | Application Load Balancer |
+| Scaling Policy | TargetTracking (CPU 40%) |
+| Health Check | `/health` |
 
-ALB routes traffic:
+---
 
-/service1/* → Target Group 1 → Port 8080
+## 📁 Repository Structure
 
-/service2/* → Target Group 2 → Port 8081
-
-Auto Scaling Group maintains capacity and scales when:
-
-CPU utilization > 40% for 5 minutes
-
-🌎 AWS Environment Details
-Component	Configuration
-AWS Region	us-east-1
-VPC CIDR	10.0.0.0/16
-Subnets	2 Public Subnets
-EC2 Type	t2.micro
-Load Balancer	Application Load Balancer
-Scaling Policy	TargetTracking (CPU 40%)
-Health Check	/health
-📁 Repository Structure
+```
 .
 ├── docker-compose.yml
 ├── verify_endpoints.sh
 ├── README.md
 │
-├── terraform/
-│   ├── main.tf
-│   ├── variables.tf
-│   ├── outputs.tf
-│   ├── user_data.sh
-│   └── terraform.tfvars
+└── terraform/
+    ├── main.tf
+    ├── variables.tf
+    ├── outputs.tf
+    ├── user_data.sh
+    └── terraform.tfvars
+```
 
-🐳 Stage 1 – Push Docker Images to Amazon ECR
+---
 
-Create repositories:
+# 🐳 Stage 1 – Push Docker Images to ECR
 
+### 1️⃣ Create Repositories
+
+```bash
 aws ecr create-repository --repository-name service1
 aws ecr create-repository --repository-name service2
+```
 
+### 2️⃣ Authenticate Docker
 
-Authenticate Docker:
-
+```bash
 aws ecr get-login-password --region us-east-1 | \
 docker login --username AWS --password-stdin <ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com
+```
 
+### 3️⃣ Tag & Push
 
-Tag & Push:
-
+```bash
 docker tag service1:latest <ECR_URI>/service1:latest
 docker push <ECR_URI>/service1:latest
 
 docker tag service2:latest <ECR_URI>/service2:latest
 docker push <ECR_URI>/service2:latest
+```
 
+### ✔ Verification
 
-Verify:
-
+```bash
 docker pull <ECR_URI>/service1:latest
+```
 
-🌍 Stage 2 – Deploy Infrastructure (Terraform)
+---
+
+# 🌍 Stage 2 – Infrastructure Deployment (Terraform)
 
 Navigate to Terraform directory:
 
+```bash
 cd terraform
+```
 
+### Initialize
 
-Initialize:
-
+```bash
 terraform init
+```
 
+### Plan
 
-Plan:
-
+```bash
 terraform plan
+```
 
+### Apply
 
-Apply:
-
+```bash
 terraform apply
+```
 
+After deployment:
 
-After successful deployment:
-
+```bash
 terraform output alb_dns
+```
 
+---
 
-This returns the ALB DNS endpoint.
+# 🔁 Traffic Routing
 
-🔁 Traffic Routing
-Path	Target
-/service1/*	Service 1 (Port 8080)
-/service2/*	Service 2 (Port 8081)
+| Path | Target |
+|------|--------|
+| `/service1/*` | Service 1 (Port 8080) |
+| `/service2/*` | Service 2 (Port 8081) |
 
-Example:
+### Test via curl
 
+```bash
 curl http://<ALB-DNS>/service1/health
 curl http://<ALB-DNS>/service2/health
-
+```
 
 Expected response:
 
+```
 HTTP 200
+```
 
-🔎 Endpoint Verification Script
+---
 
-verify_endpoints.sh
+# 🔎 Endpoint Verification Script
 
 Run:
 
+```bash
 chmod +x verify_endpoints.sh
 ./verify_endpoints.sh <ALB-DNS>
+```
 
+### Script Behavior
 
-Script behavior:
+- Validates both service endpoints
+- Exits with non-zero status on failure
+- Prints confirmation when successful
 
-Validates both service endpoints
+---
 
-Exits with non-zero status on failure
+# ⚙️ Auto Scaling Configuration
 
-Prints confirmation when successful
+### Launch Template
+- Ubuntu 24.04
+- Docker installation
+- AWS CLI installation
+- Automatic ECR login
+- docker-compose deployment
 
-⚙️ Auto Scaling Implementation
-Launch Template
+### Auto Scaling Group
 
-Ubuntu 24.04
+| Setting | Value |
+|----------|-------|
+| Min | 2 |
+| Desired | 2 |
+| Max | 4 |
 
-Docker & AWS CLI installation
+### Scaling Policy
 
-Automatic ECR login
+- TargetTrackingScaling
+- ASGAverageCPUUtilization
+- Threshold: 40%
 
-docker-compose deployment via user-data
+---
 
-Auto Scaling Group
-Setting	Value
-Min	2
-Desired	2
-Max	4
-Scaling Policy
+## 🔥 Load Simulation
 
-TargetTrackingScaling
-
-ASGAverageCPUUtilization
-
-Threshold: 40%
-
-Simulate Load
-
-SSH into instance:
-
+```bash
 sudo apt install stress
 stress --cpu 2 --timeout 600
+```
 
+Monitor in:
 
-Observe scale-out in:
+- ASG Activity History
+- CloudWatch Metrics
 
-ASG Activity History
+---
 
-CloudWatch Metrics
+# 🔐 Security Design
 
-🔐 Security Design
+- ALB security group: allows HTTP (80)
+- EC2 security group:
+  - 8080–8081 from ALB only
+  - SSH (22) from personal IP
+- Outbound traffic allowed (0.0.0.0/0)
+- IAM role for EC2 provides ECR access
 
-ALB security group allows public HTTP (80)
+---
 
-EC2 security group allows:
+# 📊 Evidence Included
 
-8080–8081 from ALB only
+Submission contains screenshots of:
 
-SSH (22) from personal IP
+- ECR repositories
+- `docker ps` on EC2
+- ALB DNS curl response
+- ASG scale-out events
+- CloudWatch CPU graph
 
-Outbound traffic allowed (0.0.0.0/0)
+---
 
-EC2 IAM role allows ECR access
+# 🧹 Cleanup
 
-📊 Evidence Provided
+Destroy all resources:
 
-Submission includes screenshots of:
-
-ECR repositories
-
-docker ps on EC2
-
-ALB DNS endpoint with curl response
-
-Auto Scaling event logs
-
-CloudWatch CPU metric graph
-
-🧹 Cleanup Instructions
-
-To destroy all AWS resources:
-
+```bash
 cd terraform
 terraform destroy
+```
 
+Confirmed removed:
 
-All resources confirmed deleted:
+- EC2 instances
+- Auto Scaling Group
+- Launch Template
+- ALB
+- Target Groups
+- VPC
+- Security Groups
 
-EC2 instances
+---
 
-Auto Scaling Group
+# 🚀 Future Improvements
 
-Launch Template
+- Migrate to ECS or EKS
+- Enable HTTPS with ACM
+- Implement CI/CD pipeline
+- Remote Terraform backend (S3 + DynamoDB)
+- Structured logging & monitoring
 
-ALB
+---
 
-Target Groups
+# 🎯 Skills Demonstrated
 
-VPC
+- Docker image lifecycle
+- Amazon ECR integration
+- Terraform infrastructure provisioning
+- EC2 bootstrapping via user-data
+- ALB path-based routing
+- Auto Scaling configuration
+- Health check automation
+- Secure cloud networking
 
-Security Groups
+---
 
-No running billable resources remain.
+## 👤 Author
+
+**Praktan Taiwade**  
+Cloud / DevOps / Network Engineer  
+GitHub: https://github.com/praktan20
+
+---
