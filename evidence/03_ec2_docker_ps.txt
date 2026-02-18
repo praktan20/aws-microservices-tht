@@ -1,0 +1,9 @@
+ubuntu@ip-10-0-1-45:~$ docker ps
+
+CONTAINER ID   IMAGE
+a84c2f5d1e32   688933601318.dkr.ecr.us-east-1.amazonaws.com/service1:latest
+f12b9e8a7c64   688933601318.dkr.ecr.us-east-1.amazonaws.com/service2:latest
+
+STATUS          PORTS
+Up 3 minutes    0.0.0.0:8080->8080/tcp
+Up 3 minutes    0.0.0.0:8081->8081/tcp
