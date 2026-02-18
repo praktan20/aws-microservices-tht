@@ -1,0 +1,20 @@
+$ aws ecr describe-repositories --region us-east-1
+
+{
+  "repositories": [
+    {
+      "repositoryArn": "arn:aws:ecr:us-east-1:688933601318:repository/service1",
+      "registryId": "688933601318",
+      "repositoryName": "service1",
+      "repositoryUri": "688933601318.dkr.ecr.us-east-1.amazonaws.com/service1",
+      "createdAt": "2026-02-18T19:02:11"
+    },
+    {
+      "repositoryArn": "arn:aws:ecr:us-east-1:688933601318:repository/service2",
+      "registryId": "688933601318",
+      "repositoryName": "service2",
+      "repositoryUri": "688933601318.dkr.ecr.us-east-1.amazonaws.com/service2",
+      "createdAt": "2026-02-18T19:02:13"
+    }
+  ]
+}
